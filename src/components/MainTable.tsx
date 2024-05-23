@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { Radio, RadioGroup, Stack, Button, Heading, Box, Table, Thead, Tbody, Tr, Th, Td } from '@chakra-ui/react';
 
 interface JobData {
   work_year: number;
@@ -23,13 +25,17 @@ interface JobDetails {
 interface Details {
   count: number;
   jd: JobDetails[];
-  totalSalary: number; // Accumulating total salary
+  totalSalary: number;
   avgsal: number;
 }
 
 const MainTable: React.FC = () => {
   const [data, setData] = useState<JobData[]>([]);
   const [map, setMap] = useState<Map<number, Details>>(new Map());
+  const [selectedYear, setSelectedYear] = useState<number | null>(null);
+  const [sortField, setSortField] = useState<string>('year');
+  const [sortOrder, setSortOrder] = useState<string>('asc');
+  const navigate = useNavigate();
 
   useEffect(() => {
     axios.get('http://localhost:5000/api/salaries')
@@ -54,7 +60,7 @@ const MainTable: React.FC = () => {
       const yearDetails = tempMap.get(work_year);
       if (yearDetails) {
         yearDetails.count += 1;
-        yearDetails.totalSalary += salary_in_usd/1000;
+        yearDetails.totalSalary += salary_in_usd / 1000;
 
         const jobIndex = yearDetails.jd.findIndex(job => job.title === job_title);
         if (jobIndex !== -1) {
@@ -67,32 +73,98 @@ const MainTable: React.FC = () => {
 
     tempMap.forEach((details, year) => {
       details.avgsal = (details.totalSalary / details.count) * 1000;
-      // Debugging output to check calculation
-      console.log(`Year: ${year}, Total Salary: ${details.totalSalary}, Count: ${details.count}, Avg Salary: ${details.avgsal}`);
     });
 
     setMap(tempMap);
   }, [data]);
 
+  const handleRowClick = (year: number) => {
+    setSelectedYear(year);
+  };
+
+  const selectedYearDetails = selectedYear !== null ? map.get(selectedYear) : null;
+
+  const handleNavigateToAnalytics = () => {
+    navigate('/analytics', { state: { mapData: Array.from(map.entries()) } });
+  };
+
+  const sortedData = Array.from(map.entries()).sort(([yearA, detailsA], [yearB, detailsB]) => {
+    let compareResult = 0;
+    switch (sortField) {
+      case 'year':
+        compareResult = yearA - yearB;
+        break;
+      case 'avgSalary':
+        compareResult = detailsA.avgsal - detailsB.avgsal;
+        break;
+      case 'jobs':
+        compareResult = detailsA.count - detailsB.count;
+        break;
+      default:
+        break;
+    }
+    return sortOrder === 'asc' ? compareResult : -compareResult;
+  });
+
   return (
-    <table>
-      <thead>
-        <tr>
-          <th>Year</th>
-          <th>Average Salary</th>
-          <th>Number of Jobs</th>
-        </tr>
-      </thead>
-      <tbody>
-        {Array.from(map.entries()).map(([year, details]) => (
-          <tr key={year}>
-            <td>{year}</td>
-            <td>{details.avgsal.toFixed(2)}</td>
-            <td>{details.count}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <Box className='flex items-center flex-col p-4'>
+      <Box className='w-full flex flex-row justify-between items-center mb-6'>
+        <RadioGroup onChange={setSortField} value={sortField}>
+          <Stack direction='row'>
+            <Radio value='year'>Year</Radio>
+            <Radio value='avgSalary'>Avg. Salary</Radio>
+            <Radio value='jobs'>Jobs</Radio>
+          </Stack>
+        </RadioGroup>
+        <Stack direction='row' spacing={4}>
+          <Button colorScheme='teal' variant='outline' onClick={() => setSortOrder('asc')}>Ascending</Button>
+          <Button colorScheme='teal' variant='outline' onClick={() => setSortOrder('desc')}>Descending</Button>
+        </Stack>
+      </Box>
+
+      <Table variant='striped' colorScheme='teal' className='w-[80%] mb-10'>
+        <Thead>
+          <Tr>
+            <Th>Year</Th>
+            <Th>Average Salary</Th>
+            <Th>Number of Jobs</Th>
+          </Tr>
+        </Thead>
+        <Tbody>
+          {sortedData.map(([year, details]) => (
+            <Tr key={year} onClick={() => handleRowClick(year)} style={{ cursor: 'pointer' }}>
+              <Td>{year}</Td>
+              <Td>{details.avgsal.toFixed(2)}</Td>
+              <Td>{details.count}</Td>
+            </Tr>
+          ))}
+        </Tbody>
+      </Table>
+
+      <Button colorScheme='teal' size='lg' onClick={handleNavigateToAnalytics} className='mb-6'>Analytics</Button>
+
+      {selectedYearDetails && (
+        <>
+          <Heading as='h2' size='lg' mb={4}>Details for {selectedYear}</Heading>
+          <Table variant='striped' colorScheme='teal' className='w-[80%]'>
+            <Thead>
+              <Tr>
+                <Th>Job Title</Th>
+                <Th>Number of Roles</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {selectedYearDetails.jd.map((jobDetail, index) => (
+                <Tr key={index}>
+                  <Td>{jobDetail.title}</Td>
+                  <Td>{jobDetail.jcount}</Td>
+                </Tr>
+              ))}
+            </Tbody>
+          </Table>
+        </>
+      )}
+    </Box>
   );
 };
 

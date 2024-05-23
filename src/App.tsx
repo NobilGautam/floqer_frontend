@@ -1,14 +1,22 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import MainTable from './components/MainTable';
+import Analytics from './components/Analytics';
+import { ChakraProvider } from '@chakra-ui/react'
 
-function App() {
+const App: React.FC = () => {
   return (
-    <div className="App">
-      <MainTable/>
-    </div>
+    <ChakraProvider>
+      <Router>
+        <div className='bg-[#FFE6E6] h-[100vh]'>
+          <Routes>
+            <Route path="/" element={<MainTable />} />
+            <Route path="/analytics" element={<Analytics />} />
+          </Routes>
+        </div>
+      </Router>
+    </ChakraProvider>
   );
-}
+};
 
 export default App;
