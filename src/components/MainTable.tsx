@@ -39,7 +39,7 @@ const MainTable: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get('http://localhost:5000/api/salaries')
+    axios.get('https://floqer-backend.onrender.com/api/salaries')
       .then(response => {
         setData(response.data);
       })
@@ -80,8 +80,8 @@ const MainTable: React.FC = () => {
   }, [data]);
 
   const handleRowClick = (year: number) => {
-    setSelectedYear(selectedYear === year ? null : year); // Toggle selection
-    setShowDetails(selectedYear !== year || !showDetails); // Toggle details visibility
+    setSelectedYear(selectedYear === year ? null : year); 
+    setShowDetails(selectedYear !== year || !showDetails); 
   };
 
   const selectedYearDetails = selectedYear !== null ? map.get(selectedYear) : null;
