@@ -110,7 +110,7 @@ const MainTable: React.FC = () => {
 
   return (
     <Box className='flex items-center flex-col p-4'>
-      <Box className='w-full flex flex-row justify-between items-center mb-6'>
+      <Box className='w-full flex md:flex-row md:justify-between md:items-center flex-col items-stretch justify-center mb-6'>
         <RadioGroup onChange={setSortField} value={sortField}>
           <Stack direction='row'>
             <Radio value='year'>Year</Radio>
