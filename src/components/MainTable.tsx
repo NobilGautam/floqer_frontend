@@ -35,6 +35,7 @@ const MainTable: React.FC = () => {
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [sortField, setSortField] = useState<string>('year');
   const [sortOrder, setSortOrder] = useState<string>('asc');
+  const [showDetails, setShowDetails] = useState<boolean>(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -79,7 +80,8 @@ const MainTable: React.FC = () => {
   }, [data]);
 
   const handleRowClick = (year: number) => {
-    setSelectedYear(year);
+    setSelectedYear(selectedYear === year ? null : year); // Toggle selection
+    setShowDetails(selectedYear !== year || !showDetails); // Toggle details visibility
   };
 
   const selectedYearDetails = selectedYear !== null ? map.get(selectedYear) : null;
@@ -143,7 +145,7 @@ const MainTable: React.FC = () => {
 
       <Button colorScheme='teal' size='lg' onClick={handleNavigateToAnalytics} className='mb-6'>Analytics</Button>
 
-      {selectedYearDetails && (
+      {selectedYearDetails && showDetails && (
         <>
           <Heading as='h2' size='lg' mb={4}>Details for {selectedYear}</Heading>
           <Table variant='striped' colorScheme='teal' className='w-[80%]'>

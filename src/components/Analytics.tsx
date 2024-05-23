@@ -26,8 +26,8 @@ const Analytics: React.FC = () => {
       {
         label: 'Average Salary',
         data: avgSalaries,
-        borderColor: 'rgb(53, 162, 235)',
-        backgroundColor: 'rgba(53, 162, 235, 0.2)',
+        borderColor: 'rgb(248, 17, 224)',
+        backgroundColor: 'rgba(153, 562, 235, 0.2)',
       },
     ],
   };
